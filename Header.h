@@ -4,7 +4,7 @@
 #include <ws2tcpip.h>
 //
 #include <string>
-#include <iostream>
+#include <sstream>
 
 //#define _WIN32_WINNT 0x0501
 //#include <stdio.h>
