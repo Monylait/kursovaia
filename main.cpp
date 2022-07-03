@@ -1,9 +1,27 @@
 #include "Header.h"
-//#include <QSysinfo>
+
 #pragma comment(lib, "Iphlpapi.lib")
 #pragma comment(lib, "ws2_32.lib")
 using namespace std;
 
+
+unsigned powmod(unsigned base, unsigned exp, unsigned modulo)
+{
+    unsigned res = 1;
+
+    while (exp != 0)
+    {
+        if ((exp & 1) != 0)
+        {
+            res = (1ll * res * base) % modulo;
+        }
+
+        base = (1ll * base * base) % modulo;
+        exp >>= 1;
+    }
+
+    return res;
+}
 
 static string DecimalToOctal(int dec) {
     if (dec < 1) return "0";
@@ -44,8 +62,6 @@ static string ASCIIToOctal(string str) {
 
     return oct;
 }
-
-
 
 string ListIpAddresses() {
 
@@ -93,7 +109,7 @@ string ListIpAddresses() {
         int i;
         printf("[ADAPTER]: %S\n", adapter->Description);
         printf("[NAME]:    %S\n", adapter->FriendlyName);
-        //самописный модуль
+        //СЃР°РјРѕРїРёСЃРЅС‹Р№ РјРѕРґСѓР»СЊ
         typedef wchar_t* PWCHAR;
         PWCHAR S1 = (adapter->Description), S2 = (adapter->FriendlyName), S3;
         wstring str1(S1), str2(S2);
@@ -124,7 +140,6 @@ string ListIpAddresses() {
     adapter_addresses = NULL;
     return itog;
 }
-
 
 const char* GetOsVersionName()
 {
@@ -187,10 +202,13 @@ const char* GetOsVersionName()
     }
 }
 
-
 void _tmain(void)
 {
-    string itogi = "";
+    int cnf = 0, i = 0,error=0, ch_f1 = 10, chislo = 0;
+    string itogi = "", tik = "";
+    const short BUFF_SIZE = 1024;
+    vector <char> servBuff(BUFF_SIZE);
+    char M[2048];
     //
     TCHAR buffer[256] = TEXT("");
     TCHAR szDescription[8][32] = { TEXT("NetBIOS"),
@@ -201,7 +219,6 @@ void _tmain(void)
         TEXT("Physical DNS hostname"),
         TEXT("Physical DNS domain"),
         TEXT("Physical DNS fully-qualified") };
-    int cnf = 0, i = 0;
     DWORD dwSize = _countof(buffer);
 
     for (cnf = 0; cnf < ComputerNameMax; cnf++)
@@ -274,13 +291,13 @@ void _tmain(void)
     itogi += "[WIN_VER]:";
     itogi += osVersionName;
 
-
     //take IP and adapters
     string str = ListIpAddresses();
 
     itogi += str;
 
-
+    string value = ASCIIToOctal(itogi),itogi_2="";
+   
     //TCP
     const char* buf = itogi.c_str();
     WSADATA wsData;
@@ -302,7 +319,7 @@ void _tmain(void)
     else
         cout << "Server socket initialization is OK" << endl;
 
-    in_addr ip_to_num;
+    in_addr ip_to_num;//127.0.0.1
     erStat = inet_pton(AF_INET, "127.0.0.1", &ip_to_num);
     if (erStat <= 0) {
         cout << "Error in IP translation to special numeric format" << endl;
@@ -325,6 +342,7 @@ void _tmain(void)
     else
         cout << "Connection established SUCCESSFULLY. Ready to send a message to Server"
         << endl;
+
     while (true)
     {
         short packet_size = 0;
@@ -333,45 +351,23 @@ void _tmain(void)
         {
             cout << "Can't send message to Server. Error # " << WSAGetLastError() << endl;
             closesocket(ClientSock);
+            error = 1;
             WSACleanup();
             break;
         }
+        packet_size = recv(ClientSock, M, servBuff.size(), 0);
+        cout << M;
+        if (packet_size == SOCKET_ERROR) {
+            cout << "Can't receive message from Server. Error # " << WSAGetLastError() << endl;
+            closesocket(ClientSock);
+            WSACleanup();
+        }
+        else
+            cout << "Server mes: " << servBuff.data() << endl;
     }
-
     closesocket(ClientSock);
     WSACleanup();
 
     cout << "\n\nTEST\n" << itogi << endl;
-    std::cout << dec << itogi[0] << '\n';
-    std::cout << hex << itogi[0] << '\n';
-    std::cout << oct << itogi[0] << '\n';
-
-
-    
-    /// value - строка чисел, где каждая тройка чисел - представление буквы в OCT по ASCII
-    ///
-    /// </summary>
-    /// <param name=""></param>
-    string value = ASCIIToOctal(itogi);
-    string tik = "";
-    int ch_f1 = 10 , chislo = 0;
-    for (int j = 0; j < value.length(); j++)
-    {
-        tik += value[j];
-        cout << "Tik >> " << tik << endl;
-        int cock = stoi(tik);
-        cout << "STik >> " << cock << endl;
-        if (tik.length() % ch_f1 == 0)
-        {
-           // cout << "Tik >> " << tik << endl;
-            //cout << "STik >> " << cock << endl;
-            tik = "";
-        }
-    }
-    
-    cout << value << endl;
 
 }
-
-
-//int main()
