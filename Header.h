@@ -14,3 +14,6 @@
 #include <tchar.h>
 #include <VersionHelpers.h>
 #include <winsock.h>
+#include <cmath>
+#include <vector>
+//#include "cryptlib.h"
